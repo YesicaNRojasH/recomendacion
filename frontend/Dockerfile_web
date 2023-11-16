@@ -1,0 +1,11 @@
+# Use the PHP image
+FROM php:7.4-apache
+
+# Copy the app files to the container
+COPY app/ /var/www/html/
+
+# Expose port 80
+EXPOSE 80
+
+# Start Apache
+CMD ["apache2-foreground"]

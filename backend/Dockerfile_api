@@ -1,0 +1,18 @@
+# Use a Python base image
+FROM python:3.9-slim
+
+# Set the working directory in the container
+WORKDIR /app
+
+# Copy the requirements file and install dependencies
+COPY api/requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+# Copy the rest of the app files to the container
+COPY api/ /app/
+
+# Expose the port where the API will run
+EXPOSE 5000
+
+# Command to run the API server
+CMD ["python", "api.py"]
