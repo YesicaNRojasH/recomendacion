@@ -2,16 +2,28 @@ from flask import Flask, jsonify
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objs as go
+import redis
+import json
 
 app = Flask(__name__)
+redis_client = redis.StrictRedis(host='localhost', port=6379, db=0)
 
 # Ruta para obtener los datos de ratings
 @app.route('/api/ratings', methods=['GET'])
 def get_ratings():
-    # Cargar el archivo CSV con Pandas
+    ratings_data = redis_client.get('ratings_data')
+    if ratings_data:
+        # Si los datos están en caché, devolverlos directamente
+        return ratings_data
+
+    # Si no están en caché, cargar el archivo CSV con Pandas
     ratings = pd.read_csv('ratings.csv')
-    # Convertir los datos a formato JSON y devolverlos como respuesta
-    return jsonify(ratings.to_dict(orient='records'))
+    ratings_json = ratings.to_json(orient='records')
+
+    # Guardar en caché los datos por 1 hora (3600 segundos)
+    redis_client.setex('ratings_data', 3600, ratings_json)
+    
+    return jsonify(json.loads(ratings_json))
 
 @app.route('/api/top_users', methods=['GET'])
 def get_top_users():
